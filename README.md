@@ -78,13 +78,15 @@ skill-auditor maintains an audit cache (`audit_cache.json`) with content fingerp
 
 The output risk label isn't just a label. Use it to program decisions:
 
-| Risk | Score Range | Recommended Action |
-|---|---|---|
-| `safe` | 20 | Install without hesitation |
-| `low` | 17–19 | Install, display advisory |
-| `medium` | 13–16 | Install with warning, review flagged items |
-| `high` | 8–12 | **Pause installation**, present risk report, wait for user approval |
-| `critical` | 0–7 | **Reject installation**. Do not write to skills directory. |
+| Risk | Score Range | Execution Strategy | Recommended Action |
+|---|---|---|---|
+| `safe` | 20 | `auto_install` | Install without hesitation, no prompt needed |
+| `low` | 17–19 | `auto_install_with_advisory` | Install, display a one-line safety note |
+| `medium` | 13–16 | `install_after_warning` | Install, show flagged items, let user decide whether to keep |
+| `high` | 8–12 | `hold_for_review` | **Pause installation**. Present full risk report. Require explicit user approval before proceeding. |
+| `critical` | 0–7 | `block` | **Reject installation**. Do not write skill files to disk. Report findings immediately. |
+
+The `Execution Strategy` column is machine-actionable — wire `overall_risk` into your agent's download handler, CI pipeline, or skill marketplace gateway to enforce policy automatically.
 
 ---
 
