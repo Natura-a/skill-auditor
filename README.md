@@ -1,91 +1,139 @@
 # skill-auditor
 
-CodeBuddy Code Skill 质量 + 安全双维审计工具，严格依据"契约式接口"原则与"供应链安全"标准。
+> **The missing security layer for AI agent skills.**
+>
+> You wouldn't run `npm install` without `npm audit`. Why would you let an AI agent load third-party skills without one?
 
-## 功能
+---
 
-### 工程化审计（80 分）
-- **契约指纹比对**：通过比对输入/输出 Schema 指纹，实现增量跳过，节省 Token 消耗
-- **六维工程验收**：语义路由、契约接口、调用范例、异步反馈、熔断兜底、结构化输出
-- **审计台账管理**：自动维护 `audit_cache.json`，支持历史评分回溯
+## The Problem
 
-### 安全审计（20 分）
-- **硬编码凭证检测**：扫描 API Key / Token / Password 是否硬编码在代码中
-- **环境变量泄露检测**：检查是否存在 `print(os.environ)` 等敏感操作
-- **网络权限审查**：网络权限声明是否与 Skill 功能合理匹配
-- **文件权限审查**：文件读写权限声明是否限定在合理目录范围内
-- **隐藏指令检测**：是否存在隐藏在正常内容中的幽灵指令
-- **依赖风险检测**：Python/npm 依赖包是否来自可信源
+AI agents are the new runtime. Skills, plugins, custom instructions — whatever your platform calls them — are the new dependencies. And right now, **there is no audit**.
 
-### 综合评分
-- **总分**：engineering_score（0-80）+ safety_score（0-20）
-- **风险等级**：safe / low / medium / high / critical
-- **安全快速扫描**：支持 `safety_only` 模式，仅执行安全审查
+Every skill you install gets the same trust as code you wrote yourself. It reads your prompts, accesses your tools, and runs scripts on your machine. One malicious skill can leak API keys, exfiltrate conversation history, or inject hidden commands into your agent's workflow.
 
-## 使用方式
+**skill-auditor is the audit step that should exist before any skill touches your agent.**
 
-在 CodeBuddy Code 中输入：
+---
 
-```
-审查 skill-auditor 这个技能
-```
+## What It Does
 
-定向审查指定 Skill：
+skill-auditor evaluates every skill on two independent axes:
 
-```
-审计 bilibili-analyzer
-```
+| Dimension | Score | What it checks |
+|---|---|---|
+| **Engineering Quality** | 0–80 | Does the skill actually work? Contract completeness, error handling, timeout logic, structured output |
+| **Supply Chain Safety** | 0–20 | Can this skill be trusted? Credential leaks, hidden commands, suspicious dependencies, file permission overreach |
 
-批量审查：
+A combined score of **0–100** with a risk label: `safe` / `low` / `medium` / `high` / `critical`.
 
-```
-检查所有技能
-```
+---
 
-仅安全扫描：
+## Why It Matters — For Every AI Agent Platform
 
-```
-安全审计 humanizer-zh
-```
+skill-auditor doesn't care if your agent is built with CodeBuddy, Cursor, Claude Code, Copilot, or a custom framework. It audits the artifact — the skill definition file itself. As long as your skills are defined as Markdown/YAML with a standard contract structure (description, input schema, output schema, tool calls), the auditor works.
 
-## 自动触发
+**Before you install, you audit. Before you trust, you verify.**
 
-以下场景会自动触发审计：
-- `mcp-skill-config` 完成新 Skill 配置后
-- 从外部仓库下载/安装新 Skill 后（匹配 "配置完成"、"git clone" 等上下文信号）
+---
 
-## 输出示例
+## Safety Checks — 7-Point Supply Chain Scan
+
+| # | Check | What it catches |
+|---|---|---|
+| 1 | **Hardcoded credentials** | API keys, tokens, passwords, JWT secrets baked into skill files |
+| 2 | **Environment variable leakage** | `print(os.environ['KEY'])` — the #1 real-world skill vulnerability (73.5% prevalence in academic study) |
+| 3 | **Network permission audit** | Does a text formatter really need internet access? |
+| 4 | **Hidden command detection** | Ghost shell commands buried in long text, disguised in links, or smuggled in Markdown |
+| 5 | **File permission audit** | Is the skill reading `.ssh/`, `.aws/`, `.env` when it shouldn't? |
+| 6 | **Dependency source verification** | `requirements.txt` / `package.json` pulling from non-official repos? |
+| 7 | **Destructive file operation detection** | `rm -rf`, `chmod 777`, global installs in skill scripts |
+
+---
+
+## Engineering Checks — 6-Dimension Quality Gate
+
+| # | Dimension | What it validates |
+|---|---|---|
+| 1 | **Semantic routing** | Is the trigger condition clear enough for an LLM to decide when to invoke? |
+| 2 | **Contract interface** | Is input declared as JSON Schema? Does output follow `{status, data, error}`? |
+| 3 | **Usage examples** | Are there complete end-to-end invocation chains? |
+| 4 | **Async feedback** | Long-running operations: does the skill return a `task_id` for polling? |
+| 5 | **Circuit breaker** | Timeout thresholds, retry strategies, machine-readable error codes? |
+| 6 | **Structured output** | Does the skill enforce JSON output instead of free text? |
+
+---
+
+## Smart Caching — Pay for What's New
+
+skill-auditor maintains an audit cache (`audit_cache.json`) with content fingerprints for every file in a skill. When you re-audit:
+- **No changes** → returns cached score instantly, zero additional cost
+- **Contract changes** → full re-audit triggered
+- **Script changes** → safety re-scan triggered
+- **`force: true`** → skip cache, run everything
+
+---
+
+## Risk-Based Decisions — Automate Your Trust Policy
+
+The output risk label isn't just a label. Use it to program decisions:
+
+| Risk | Score Range | Recommended Action |
+|---|---|---|
+| `safe` | 20 | Install without hesitation |
+| `low` | 17–19 | Install, display advisory |
+| `medium` | 13–16 | Install with warning, review flagged items |
+| `high` | 8–12 | **Pause installation**, present risk report, wait for user approval |
+| `critical` | 0–7 | **Reject installation**. Do not write to skills directory. |
+
+---
+
+## Integration — Drop It Into Any Agent Platform
+
+skill-auditor is a standalone skill definition file (`SKILL.md`) with no external dependencies. To add it to your agent:
+
+1. Copy the `SKILL.md` into your agent's skills directory
+2. Ensure the agent can read/write a `audit_cache.json` file in the same directory
+3. Call it with `{ "skill_name": "target-skill" }` before installing any third-party skill
+4. (Recommended) Wire it to auto-trigger after every `git clone` or skill download
+
+Want audit as a service? Run it as a pre-commit hook, a CI check, or a gateway in your skill marketplace pipeline.
+
+---
+
+## Output — Machine-Readable, Decision-Ready
 
 ```json
 {
   "status": "audited",
-  "skill_name": "web_scraper",
+  "skill_name": "third-party-scraper",
   "data": {
     "engineering_score": 68,
     "safety_score": 7,
     "score": 75,
     "overall_risk": "medium",
     "details": {
-      "semantic_routing": { "pass": true },
       "contract_interface": { "pass": false },
-      "few_shot_examples": { "pass": true, "count": 2 },
-      "async_feedback": { "pass": false },
-      "circuit_breaker": { "pass": true },
       "structured_output": { "pass": true },
       "safety_review": {
-        "pass": false,
-        "overall_risk": "medium",
-        "sub_checks": {
-          "hardcoded_credentials": { "pass": true, "count": 0 },
-          "env_leakage": { "pass": true, "count": 0 },
-          "network_permission": { "pass": true, "risk_level": "low" },
-          "hidden_commands": { "pass": false, "count": 1 },
-          "file_permission": { "pass": true, "risk_level": "low" },
-          "dependency_risk": { "pass": true },
-          "file_operations_risk": { "pass": true, "risk_level": "low" }
-        }
+        "hardcoded_credentials": { "pass": true },
+        "env_leakage": { "pass": false, "count": 1 },
+        "hidden_commands": { "pass": true }
       }
-    }
+    },
+    "suggestions": [
+      "Remove print(os.environ['API_KEY']) from scripts/scraper.py:45"
+    ]
   }
 }
 ```
+
+---
+
+## The Principle
+
+> **"Interface unchanged, verdict unchanged. Script changed, security re-audited. Credential found, stop immediately."**
+
+skill-auditor doesn't guess. It compares contracts, scans source files, and gives you a quantified, reproducible verdict every time.
+
+**Install with confidence. Audit first.**
