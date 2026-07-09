@@ -1,140 +1,138 @@
 # skill-auditor v3.1
 
-> **The missing security + quality layer for AI agent skills.**
+> **AI Agent Skill 的安全 + 质量审计层。**
 >
-> You wouldn't run `npm install` without `npm audit`. Why would you let an AI agent load third-party skills without one?
+> 你不会不用 `npm audit` 就直接 `npm install`，那为什么让 AI Agent 加载第三方 Skill 时不审计？
 
 ---
 
-## The Problem
+## 问题
 
-AI agents are the new runtime. Skills, plugins, custom instructions — whatever your platform calls them — are the new dependencies. And right now, **there is no audit**.
+AI Agent 是新的运行时。Skill、插件、自定义指令——无论平台怎么称呼——就是新的依赖。而目前，**没有审计**。
 
-Every skill you install gets the same trust as code you wrote yourself. It reads your prompts, accesses your tools, and runs scripts on your machine. One malicious skill can leak API keys, exfiltrate conversation history, or inject hidden commands into your agent's workflow.
+你安装的每个 Skill 都获得与你亲手写的代码同等的信任。它读取你的提示、访问你的工具、在你机器上运行脚本。一个恶意 Skill 就能泄露 API Key、窃取对话历史、向 Agent 工作流注入隐藏指令。
 
-**skill-auditor is the audit step that should exist before any skill touches your agent.**
+**skill-auditor 是应该在任何 Skill 接触你的 Agent 之前存在的审计步骤。**
 
 ---
 
-## What It Does
+## 核心功能
 
-skill-auditor evaluates every skill across **five phases**:
+skill-auditor 通过 **五个阶段** 评估每个 Skill：
 
-| Phase | Focus | Key Capabilities |
+| 阶段 | 关注点 | 核心能力 |
 |---|---|---|
-| **0. Source & Trust** | Where does it come from? | Author reputation, star count, update recency, trust tier classification |
-| **1. Intent Verification** | Does it do what it says? | Cross-reference description vs actual behavior, detect undisclosed capabilities |
-| **2. Engineering Quality (0-60)** | Can it work reliably? | 10-dimension quality score (description, token efficiency, positional architecture, scope, structure, degrees of freedom, progressive disclosure, contract, examples, error handling) |
-| **3. Security Audit (0-40)** | Is it safe? | OWASP Agentic Top 10 + MITRE ATLAS + CWE mapping, 14 security sub-checks |
-| **4. Scoring & Evolution** | What's the verdict? | A-F grade, SAFE/SUSPICIOUS/MALICIOUS verdict, trigger test set, knowledge evolution |
+| **0. 来源与信任** | 从哪里来？ | 作者声誉、Star 数、更新时效、信任分级 |
+| **1. 意图验证** | 说的和做的一样吗？ | 交叉比对 description 与实际行为，发现未声明的能力 |
+| **2. 工程化质量 (0-60)** | 能稳定工作吗？ | 10 维度质量评分（描述质量、Token 效率、位置架构、范围边界、结构信号、自由度、渐进披露、契约接口、范例、容错） |
+| **3. 安全审查 (0-40)** | 安全吗？ | OWASP Agentic Top 10 + MITRE ATLAS + CWE 映射，12 项安全检查 |
+| **4. 评分与进化** | 结论是什么？ | A-F 等级、SAFE/SUSPICIOUS/MALICIOUS 裁决、触发测试集、知识进化 |
 
-A combined **0–100** score with a grade and verdict.
+综合 **0–100** 分 + 等级 + 裁决。
 
 ---
 
-## v3.0 — What's New (Cross-Ecosystem Integration)
+## v3.0 新特性（跨生态整合）
 
-Compared to v2.0, this release integrates best practices from **9 independent skill-auditor implementations** across the agent ecosystem:
+v3.0 整合了来自 **9 个独立 skill-auditor 实现** 的最佳实践：
 
-| Source Repo | Key Contribution |
+| 来源仓库 | 核心贡献 |
 |---|---|
-| `LeriusLei/skill-auditor` | Source verification + trust tiers + red-flag checklist |
-| `maltose21/skill-auditor` | Self-audit mode + gotchas/evolution-log mechanism + when_to_use support |
-| `awch-D/claude-skill-auditor` | 21+ YAML rule patterns (prompt injection, command injection, permission abuse) |
-| `skatiyar/skill-auditor` | 10-dimension quality scoring + positional architecture + token budget analysis |
-| `xiaoshi-11111111/codex-skill-auditor` | Structured review checklist + graded reporting framework |
-| `wrsmith108/claude-skill-security-auditor` | TypeScript security audit implementation patterns |
-| `mtoby8326/skill-security-auditor` | A-F grade scale + 6-dimension weighted scoring |
-| `LLMSecurity/skillguard` | OWASP Agentic Top 10 + MITRE ATLAS mapping + obfuscation detection |
-| `Zgdfsgd/skill-security-auditor-skill` | Supply chain audit (SBOM/dependency confusion/signature) + CWE mapping |
+| `LeriusLei/skill-auditor` | 来源核查 + 信任分级 + 红旗清单 |
+| `maltose21/skill-auditor` | 自审模式 + gotchas/evolution 进化机制 + when_to_use 支持 |
+| `awch-D/claude-skill-auditor` | 21+ YAML 规则库（prompt 注入、命令注入、权限滥用） |
+| `skatiyar/skill-auditor` | 10 维度质量评分 + 位置架构 + Token 预算分析 |
+| `xiaoshi-11111111/codex-skill-auditor` | 结构化审查清单 + 分级报告框架 |
+| `wrsmith108/claude-skill-security-auditor` | TypeScript 安全审计模式 |
+| `mtoby8326/skill-security-auditor` | A-F 等级制 + 6 维度加权评分 |
+| `LLMSecurity/skillguard` | OWASP Agentic Top 10 + MITRE ATLAS 映射 + 混淆检测 |
+| `Zgdfsgd/skill-security-auditor-skill` | 供应链审计（SBOM/依赖混淆/签名）+ CWE 映射 |
 
 ---
 
-## Security Checks — 14-Point Supply Chain Scan
+## 安全审查 — 12 项扫描
 
-| # | Check | OWASP | What it catches |
+| # | 检查项 | OWASP | 检测内容 |
 |---|---|---|---|
-| 1 | **Prompt Injection** | AG01 | Hidden instructions, role manipulation, encoding bypass, jailbreak patterns |
-| 2 | **Insecure Tool Use** | AG02 | `eval/exec/subprocess`, `curl \| sh`, destructive shell commands, privilege escalation |
-| 3 | **Excessive Agency** | AG03 | Sensitive directory access, sudo, background processes, disabling safety features |
-| 4 | **Data Exfiltration** | AG05 | Outbound HTTP to undocumented domains, credential harvesting, DNS patterns |
-| 5 | **Supply Chain Risk** | AG06 | Unpinned dependencies, typosquatting, non-official sources, missing signatures |
-| 6 | **Memory Poisoning** | AG08 | Writes to MEMORY.md/AGENTS.md, cross-skill modification, persistent injection |
-| 7 | **Resource Abuse** | AG10 | Unbounded loops, fork bombs, token-wasting, unexplained compute |
-| 8 | **Hardcoded Credentials** | — | API keys (OpenAI/AWS/GitHub/Slack), JWT, SSH private keys, bcrypt hashes |
-| 9 | **Environment Variable Leakage** | — | `print(os.environ['KEY'])` — the #1 real-world skill vulnerability (73.5% prevalence) |
-| 10 | **Code Obfuscation** | — | Base64 payloads, character code construction, multi-layer encoding, misleading variable names |
-| 11 | **Dangerous Tool Combinations** | — | Bash+WebFetch (exfiltration channel), Write+WebFetch (malicious download) |
-| 12 | **Permission Abuse** | — | Wildcard tools, excessive tool count (>10), sensitive MCP tools |
-| 13 | **Command Injection** | — | `git push --force`, `kill -9`, `systemctl stop`, `crontab -e` |
-| 14 | **Destructive File Operations** | — | `rm -rf /`, `chmod 777`, `cat /etc/passwd`, global package installs |
+| 1 | **Prompt 注入** | AG01 | 隐藏指令、角色操纵、编码绕过、越狱模式 |
+| 2 | **不安全工具使用** | AG02 | `eval/exec/subprocess`、`curl \| sh`、破坏性命令、提权 |
+| 3 | **过度代理** | AG03 | 敏感目录访问、sudo、后台进程、禁用安全特性 |
+| 4 | **数据外泄** | AG05 | 未声明出站 HTTP、凭证收割、DNS 外泄 |
+| 5 | **供应链风险** | AG06 | 未锁定依赖、依赖混淆、非官方源、签名缺失 |
+| 6 | **内存投毒** | AG08 | 写入 MEMORY.md、跨 Skill 修改、持久化注入 |
+| 7 | **资源滥用** | AG10 | 无界循环、Fork Bomb、Token 浪费、无关计算 |
+| 8 | **硬编码凭证** | — | OpenAI/AWS/GitHub/Slack Key、JWT、SSH 私钥、bcrypt |
+| 9 | **环境变量泄露** | — | `print(os.environ['KEY'])` — 现实世界最高频漏洞（73.5% 发生率） |
+| 10 | **代码混淆** | — | Base64 荷载、字符码构造、多层编码、minified 代码 |
+| 11 | **危险工具组合** | — | Bash+WebFetch=外泄、Write+WebFetch=恶意下载 |
+| 12 | **权限滥用** | — | 通配符工具、过多工具数(>10)、敏感 MCP 工具 |
 
 ---
 
-## Engineering Checks — 10-Dimension Quality Gate
+## 工程化审查 — 10 维度质量门
 
-| # | Dimension | Weight | What it validates |
+| # | 维度 | 权重 | 评估内容 |
 |---|---|---|---|
-| 1 | **Description Quality** | 7 | Does it say WHAT and WHEN? Third person? Near-miss exclusion? |
-| 2 | **Token Efficiency** | 7 | Only writes what Claude doesn't already know. < 500 lines. |
-| 3 | **Positional Architecture** | 6 | Critical constraints in first 20 lines. Uses primacy/recency effects. |
-| 4 | **Scope Boundaries** | 6 | Explicit IN/OUT declarations. Adjacent domain confusion prevention. |
-| 5 | **Structural Signifiers** | 6 | Consistent headers, code blocks for templates, no text walls (>15 lines). |
-| 6 | **Degrees of Freedom** | 6 | Hard constraints vs flexible guidance clearly distinguished. |
-| 7 | **Progressive Disclosure** | 6 | Three-level loading (metadata → SKILL.md → references) properly utilized. |
-| 8 | **Contract Interface** | 6 | JSON Schema input, structured output, error codes. |
-| 9 | **Few-shot Examples** | 5 | Complete invocation chains, error scenarios covered. |
-| 10 | **Error Handling** | 5 | Timeout thresholds, retry strategies, machine-readable error codes. |
+| 1 | **描述质量** | 7 | 是否说清 WHAT 和 WHEN？第三人称？近误排除？ |
+| 2 | **Token 效率** | 7 | 只写 Claude 不知道的内容，< 500 行 |
+| 3 | **位置架构** | 6 | 关键约束在前 20 行，利用首因/近因效应 |
+| 4 | **范围边界** | 6 | 显式 IN/OUT 声明，防止相邻领域混淆 |
+| 5 | **结构信号** | 6 | 一致标题、代码块模板、无文本墙(>15行) |
+| 6 | **自由度标记** | 6 | 硬性约束与灵活指导清晰区分 |
+| 7 | **渐进披露** | 6 | 三层加载（metadata → SKILL.md → references）合理利用 |
+| 8 | **契约接口** | 6 | JSON Schema 输入、结构化输出、错误码 |
+| 9 | **Few-shot 范例** | 5 | 完整调用链、错误场景覆盖 |
+| 10 | **容错处理** | 5 | 超时阈值、重试策略、可解析错误码 |
 
 ---
 
-## A-F Grade Scale
+## A-F 等级表
 
-| Score | Grade | Verdict | Action |
+| 分数 | 等级 | 裁决 | 操作 |
 |---|---|---|---|
-| 90-100 | **A** | SAFE | Install without hesitation |
-| 75-89 | **B** | SAFE | Install, review minor improvements |
-| 60-74 | **C** | SUSPICIOUS | Review before installing |
-| 40-59 | **D** | SUSPICIOUS | Fix significant issues before use |
-| 0-39 | **F** | MALICIOUS | **Refuse installation** |
+| 90-100 | **A** | SAFE | 直接安装 |
+| 75-89 | **B** | SAFE | 安装，关注改进项 |
+| 60-74 | **C** | SUSPICIOUS | 审查后安装 |
+| 40-59 | **D** | SUSPICIOUS | 修复重大问题后使用 |
+| 0-39 | **F** | MALICIOUS | **拒绝安装** |
 
 ---
 
-## Smart Caching — Pay for What's New
+## 智能缓存 — 只为增量付费
 
-skill-auditor maintains an audit cache (`audit_cache.json`) with content fingerprints for every file in a skill. When you re-audit:
+skill-auditor 维护审计缓存（`audit_cache.json`），记录每个文件的指纹。再次审计时：
 
-- **No changes** → returns cached score instantly, zero additional cost
-- **Contract changes** → full re-audit triggered
-- **Script changes** → safety re-scan triggered
-- **`force: true`** → skip cache, run everything
+- **无变更** → 即时返回缓存评分，零额外开销
+- **契约变更** → 全量重审
+- **脚本变更** → 安全重扫
+- **`force: true`** → 跳过缓存，全量执行
 
 ---
 
-## Supported Inputs
+## 支持的输入方式
 
-| Input Type | How it Works |
+| 输入类型 | 加载方式 |
 |---|---|
-| Local skill name | Reads from `.codebuddy/skills/<name>/SKILL.md` |
-| GitHub URL | Fetches via raw.githubusercontent.com |
-| Pasted SKILL.md | Already in conversation context |
+| 本地 Skill 名称 | 读取 `.codebuddy/skills/<name>/SKILL.md` |
+| GitHub URL | 通过 raw.githubusercontent.com 获取 |
+| 粘贴的 SKILL.md | 已在对话上下文中 |
 
 ---
 
-## Output Modes
+## 输出模式
 
-| Mode | Use Case |
+| 模式 | 适用场景 |
 |---|---|
-| `json` (default) | Programmatic consumption, CI pipelines |
-| `markdown` | Human-readable reports |
+| `json`（默认） | 程序化消费、CI 流水线 |
+| `markdown` | 人工阅读报告 |
 
 ---
 
-## Self-Audit
+## 自审
 
-skill-auditor can audit itself. Same 10+14 dimensions. Same standards. No exceptions.
+skill-auditor 可以审计自己。同样的 10+12 维度，同样的标准，无一例外。
 
-### Latest Self-Audit Results (v3.1, 2026-07-09)
+### 最新自审结果（v3.1, 2026-07-09）
 
 ```
 ══════════════════════════════════════════════
@@ -144,54 +142,52 @@ skill-auditor can audit itself. Same 10+14 dimensions. Same standards. No except
 ══════════════════════════════════════════════
 ```
 
-| Dimension | v3.0 | v3.1 | Improvement |
+| 维度 | v3.0 | v3.1 | 改进 |
 |---|---|---|---|
-| Description Quality | 5/7 | **6/7** | Added near-miss exclusions |
-| Token Efficiency | 3/7 | **5/7** | Body: 673→481 lines, removed body-reference duplication |
-| Positional Architecture | 5/6 | 5/6 | — |
-| Scope Boundaries | 3/6 | **6/6** | Added explicit IN/OUT table |
-| Structural Signifiers | 5/6 | 5/6 | — |
-| Degrees of Freedom | 4/6 | **5/6** | Added [硬约束]/[建议] constraint labels |
-| Progressive Disclosure | 4/6 | **6/6** | Extracted examples.md, added TOC to refs |
-| Contract Interface | 6/6 | 6/6 | — |
-| Few-shot Examples | 4/5 | **5/5** | Extracted to references/examples.md, added 2nd example |
-| Error Handling | 5/5 | 5/5 | — |
-| **Security (14 items)** | **39/40** | **39/40** | Added allowed-tools declaration |
-
-**v3.0 → v3.1 变化**：所有 5 条 v3.0 自审发现的改进项（evolution-log.md）均已修复。v3.1 新增 `references/examples.md`（2 个完整输出示例）、`allowed-tools` 声明、近误排除、IN/OUT 范围边界表。
+| 描述质量 | 5/7 | **6/7** | 添加近误排除 |
+| Token 效率 | 3/7 | **5/7** | 673→481 行，消除 body-reference 重复 |
+| 位置架构 | 5/6 | 5/6 | — |
+| 范围边界 | 3/6 | **6/6** | 添加显式 IN/OUT 表 |
+| 结构信号 | 5/6 | 5/6 | — |
+| 自由度标记 | 4/6 | **5/6** | 添加 [硬约束]/[建议] 标签 |
+| 渐进披露 | 4/6 | **6/6** | 提取 examples.md，refs 加 TOC |
+| 契约接口 | 6/6 | 6/6 | — |
+| Few-shot 范例 | 4/5 | **5/5** | 提取到 references/examples.md，新增对比示例 |
+| 容错处理 | 5/5 | 5/5 | — |
+| **安全 (12 项)** | **39/40** | **39/40** | 新增 allowed-tools 声明 |
 
 ---
 
-## v3.1 Changelog
+## v3.1 变更日志
 
-| 改进项 | 来源 | 变更描述 |
+| 改进项 | 来源 | 描述 |
 |---|---|---|
-| Description 近误排除 | 自审 v3.0 #1 | 添加 `不用于创建新 Skill / 通用代码审查 / MCP 配置` |
-| IN/OUT 范围边界 | 自审 v3.0 #2 | 新增表格：IN 5 项 + OUT 5 项 |
-| Body 精简 | 自审 v3.0 #3 | 673→481 行（安全正则→regex-patterns.md、示例→examples.md） |
-| 消除重复 | 自审 v3.0 #4 | 阶段 4 安全检测仅保留要点表 + 引用 |
-| Reference TOC | 自审 v3.0 #5 | owasp-agentic-top10.md + regex-patterns.md 加目录 |
+| Description 近误排除 | 自审 #1 | 添加 `不用于创建新 Skill / 通用代码审查 / MCP 配置` |
+| IN/OUT 范围边界 | 自审 #2 | 新增表格：IN 5 项 + OUT 5 项 |
+| Body 精简 | 自审 #3 | 673→481 行（安全正则→regex-patterns.md、示例→examples.md） |
+| 消除重复 | 自审 #4 | 阶段 4 安全检测仅保留要点表 + 引用 |
+| Reference TOC | 自审 #5 | owasp-agentic-top10.md + regex-patterns.md 加目录 |
 | 约束标签 | 自审优化 #6 | 关键位置标注 [硬约束] / [建议] |
 | allowed-tools | 自审优化 #7 | `[Read, Write, Bash, WebFetch, Glob, Grep]` |
 | Few-shot 提取 | 自审优化 #8 | 108 行示例→references/examples.md，新增缓存命中示例 |
 
 ---
 
-## Integration
+## 集成
 
-skill-auditor is a standalone skill definition (`SKILL.md`) with no external dependencies. To add it:
+skill-auditor 是零外部依赖的独立 Skill 定义文件（`SKILL.md`）。集成步骤：
 
-1. Copy `SKILL.md` into your agent's skills directory
-2. Ensure the agent can read/write `audit_cache.json` in the same directory
-3. Call it with `{ "skill_name": "target-skill" }` before installing any third-party skill
-4. (Recommended) Wire it to auto-trigger after every `git clone` or skill download
+1. 将 `SKILL.md` 复制到 Agent 的 skills 目录
+2. 确保 Agent 可以在同目录读写 `audit_cache.json`
+3. 安装第三方 Skill 前调用 `{ "skill_name": "目标技能" }`
+4. （推荐）配置为每次 `git clone` 或 Skill 下载后自动触发
 
 ---
 
-## The Principle
+## 座右铭
 
-> **"Interface unchanged, verdict unchanged. Script changed, security re-audited. Credential found, stop immediately. Intent mismatched, refuse installation."**
+> **"接口不变，结论不改；脚本有变，安全重审；凭证一现，立即叫停；意图不匹，拒绝安装。"**
 
-skill-auditor doesn't guess. It compares contracts, scans source files, maps to industry standards (OWASP, MITRE ATLAS, CWE), and gives you a quantified, reproducible verdict every time.
+skill-auditor 不猜测。它比对契约、扫描源文件、映射到行业标准（OWASP、MITRE ATLAS、CWE），每次都给出量化的、可重现的裁决。
 
-**Install with confidence. Audit first.**
+**自信安装。审计为先。**
