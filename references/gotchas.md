@@ -6,7 +6,7 @@
 
 ## 规范认知
 
-- **不要删除合法字段**：`when_to_use`、`allowed-tools`、`paths`、`hooks`、`metadata`、`arguments`、`model`、`effort` 都是官方/平台字段。不确定某个字段是否合法时，查 `~/.codebuddy/docs/` 中的 Agent Skills 规范，不要猜。
+ - **不要删除合法字段**：`when_to_use`、`allowed-tools`、`paths`、`hooks`、`metadata`、`arguments`、`model`、`effort` 都是官方/平台字段。不确定某个字段是否合法时，查 `~/.codex/docs/` 中的 Agent Skills 规范，不要猜。
 - **when_to_use 与 description 互补不重复**：description 写 1-2 句话核心触发条件，when_to_use 展开具体场景。两者不重复内容。
 - **description 是触发条件，不是摘要**：错误："这是一个帮助生成周报的 Skill"。正确："当用户要求写周报、生成站报时触发"。
 - **description 使用第三人称**：官方要求，因为 description 注入 system prompt。

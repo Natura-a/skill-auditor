@@ -194,7 +194,7 @@ allowed-tools: [Read, Write, Bash, WebFetch, Glob, Grep]
 
 | 来源类型 | 信任级别 | 默认审查策略 |
 |---------|---------|------------|
-| CODEBUDDY.md 推荐且已验证的仓库 | 高信任 | 自动审计 + 汇总报告 |
+| AGENTS.md 推荐且已验证的仓库 | 高信任 | 自动审计 + 汇总报告 |
 | GitHub stars > 1000 | 中信任 | 自动审计 + 简要报告 |
 | GitHub stars 100-1000 | 低信任 | 自动审计 + 详细报告，high 以上需用户确认 |
 | GitHub stars < 100 或新账号 | 零信任 | 全量审计，medium 及以上风险均需用户确认 |
@@ -412,7 +412,7 @@ git clone/pull Skill 仓库
 | `safe` / `low` | 正常安装，显示简要确认 |
 | `medium` | 安装但显示 ⚠️ 警告 |
 | `high` | **暂缓安装**，展示详细风险报告，由用户决定 |
-| `critical` | **拒绝安装**，不写入 `.codebuddy/skills/` |
+| `critical` | **拒绝安装**，不写入 `.codex/skills/` |
 
 ## 对下载代理的约束
 

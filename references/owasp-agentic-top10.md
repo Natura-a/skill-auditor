@@ -128,7 +128,7 @@ Audit reference for the OWASP Top 10 for Agentic AI Applications. Map findings i
 - Writes to agent memory files (MEMORY.md, AGENTS.md, SOUL.md)
 - Modifying other skills in the skills directory
 - Persistent context injection via chat history
-- Modifying `.codebuddy/` configuration files
+ - Modifying `.codex/` configuration files
 
 **Severity**: CRITICAL.
 

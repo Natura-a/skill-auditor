@@ -113,7 +113,7 @@ skill-auditor 维护审计缓存（`audit_cache.json`），记录每个文件的
 
 | 输入类型 | 加载方式 |
 |---|---|
-| 本地 Skill 名称 | 读取 `.codebuddy/skills/<name>/SKILL.md` |
+ | 本地 Skill 名称 | 读取 `.codex/skills/<name>/SKILL.md` |
 | GitHub URL | 通过 raw.githubusercontent.com 获取 |
 | 粘贴的 SKILL.md | 已在对话上下文中 |
 
